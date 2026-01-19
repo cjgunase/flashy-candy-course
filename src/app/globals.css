@@ -69,7 +69,5 @@
     @apply bg-background text-foreground;
   }
 
-  h1 {
-    @apply text-5xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-primary pb-2;
-  }
+
 }
