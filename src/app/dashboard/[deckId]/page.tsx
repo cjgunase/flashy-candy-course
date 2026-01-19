@@ -2,7 +2,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { decks, cards } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { createCard } from "@/app/actions";
 import Link from "next/link";
 import { ChevronLeft, Plus } from "lucide-react";
+import { DeckSettings } from "@/components/deck-settings";
+import { CardItem } from "@/components/card-item";
 
 export default async function DeckPage({ params }: { params: Promise<{ deckId: string }> }) {
     const { userId } = await auth();
@@ -27,7 +29,10 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
 
     if (!deck) return notFound();
 
-    const deckCards = await db.select().from(cards).where(eq(cards.deckId, deckIdNum));
+    const deckCards = await db.select()
+        .from(cards)
+        .where(eq(cards.deckId, deckIdNum))
+        .orderBy(desc(cards.createdAt));
 
     return (
         <div className="container mx-auto p-8">
@@ -38,8 +43,11 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
                     </Link>
                 </Button>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h1 className="text-3xl font-bold">{deck.title}</h1>
+                    <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-3xl font-bold">{deck.title}</h1>
+                            <DeckSettings deck={deck} />
+                        </div>
                         {deck.description && <p className="text-muted-foreground mt-2">{deck.description}</p>}
                     </div>
                     <Button asChild>
@@ -84,18 +92,7 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
                         </div>
                     ) : (
                         deckCards.map((card) => (
-                            <Card key={card.id} className="group hover:border-primary/50 transition-colors">
-                                <CardContent className="p-4 space-y-3">
-                                    <div>
-                                        <div className="font-semibold text-xs text-muted-foreground uppercase tracking-wider mb-1">Front</div>
-                                        <div className="bg-muted/30 p-2 rounded-md">{card.front}</div>
-                                    </div>
-                                    <div>
-                                        <div className="font-semibold text-xs text-muted-foreground uppercase tracking-wider mb-1">Back</div>
-                                        <div className="bg-muted/30 p-2 rounded-md">{card.back}</div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <CardItem key={card.id} card={card} />
                         ))
                     )}
                 </div>
