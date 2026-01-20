@@ -16,6 +16,9 @@ export default function Home() {
 
       <div className="mt-8 flex gap-4">
         <SignedOut>
+          <Button size="lg" variant="outline" className="min-w-[120px]" asChild>
+            <Link href="/pricing">Pricing</Link>
+          </Button>
           <SignInButton mode="modal">
             <Button size="lg" className="min-w-[120px]">Login</Button>
           </SignInButton>

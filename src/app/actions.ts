@@ -6,7 +6,8 @@ import { decks, cards } from "@/db/schema";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { eq, and } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
+import { checkIsPro } from "@/lib/subscription";
 
 const createDeckSchema = z.object({
     title: z.string().min(1, "Title is required"),
@@ -42,7 +43,7 @@ const deleteCardSchema = z.object({
 });
 
 export async function createDeck(formData: FormData) {
-    const { userId } = await auth();
+    const { userId, has, sessionClaims, orgId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
     const validatedFields = createDeckSchema.safeParse({
@@ -52,6 +53,15 @@ export async function createDeck(formData: FormData) {
 
     if (!validatedFields.success) {
         throw new Error("Invalid fields");
+    }
+
+    const isPro = has({ permission: "unlimited_decks" }) || has({ role: "org:admin" }) || await checkIsPro(userId, orgId);
+
+    if (!isPro) {
+        const [deckCount] = await db.select({ value: count() }).from(decks).where(eq(decks.userId, userId));
+        if (deckCount && deckCount.value >= 3) {
+            throw new Error("Free plan limit reached. Upgrade to Pro to create more decks.");
+        }
     }
 
     const { title, description } = validatedFields.data;

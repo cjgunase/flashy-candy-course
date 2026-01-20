@@ -6,14 +6,18 @@ import { eq, desc } from "drizzle-orm";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Plus, BookOpen, ArrowRight, Settings } from "lucide-react";
+import { Plus, BookOpen, ArrowRight, Settings, Crown, Lock } from "lucide-react";
+
+import { checkIsPro } from "@/lib/subscription";
 
 export default async function DashboardPage() {
-    const { userId } = await auth();
+    const { userId, has, orgId } = await auth();
 
     if (!userId) {
         return <div>Please sign in to view your dashboard.</div>;
     }
+
+    const isPro = has({ permission: "unlimited_decks" }) || has({ role: "org:admin" }) || await checkIsPro(userId, orgId);
 
     const userDecks = await db.select().from(decks).where(eq(decks.userId, userId)).orderBy(desc(decks.createdAt));
 
@@ -26,19 +30,42 @@ export default async function DashboardPage() {
                     </h1>
                     <p className="text-muted-foreground mt-2 text-lg">Manage your flashcards and master your subjects.</p>
                 </div>
+                {!isPro && (
+                    <Button asChild variant="outline" className="border-yellow-500/50 hover:bg-yellow-500/10 hover:border-yellow-500 transition-all duration-300">
+                        <Link href="/pricing" className="flex items-center gap-2">
+                            <Crown className="h-4 w-4 text-yellow-500" />
+                            <span className="font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">Upgrade to Pro</span>
+                        </Link>
+                    </Button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Create New Deck Card */}
-                <Link href="/dashboard/create" className="group h-full">
-                    <div className="h-full border-3 border-dashed border-muted-foreground/20 hover:border-primary/50 hover:bg-accent/10 rounded-xl flex flex-col items-center justify-center p-8 transition-all cursor-pointer min-h-[220px]">
-                        <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                            <Plus className="h-7 w-7 text-primary" />
+                {!isPro && userDecks.length >= 3 ? (
+                    <div className="h-full border-3 border-dashed border-muted-foreground/20 rounded-xl flex flex-col items-center justify-center p-8 min-h-[220px] bg-muted/10">
+                        <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center mb-4">
+                            <Lock className="h-7 w-7 text-muted-foreground" />
                         </div>
-                        <h3 className="font-bold text-xl text-foreground">Create New Deck</h3>
-                        <p className="text-sm text-muted-foreground mt-2 text-center max-w-[200px]">Start a new collection of flashcards to study</p>
+                        <h3 className="font-bold text-xl text-foreground">Deck Limit Reached</h3>
+                        <p className="text-sm text-muted-foreground mt-2 text-center max-w-[200px]">
+                            Free plan is limited to 3 decks. Upgrade to create more.
+                        </p>
+                        <Button asChild variant="outline" className="mt-4 border-primary/50 text-primary hover:bg-primary/10">
+                            <Link href="/pricing">Upgrade to Pro</Link>
+                        </Button>
                     </div>
-                </Link>
+                ) : (
+                    <Link href="/dashboard/create" className="group h-full">
+                        <div className="h-full border-3 border-dashed border-muted-foreground/20 hover:border-primary/50 hover:bg-accent/10 rounded-xl flex flex-col items-center justify-center p-8 transition-all cursor-pointer min-h-[220px]">
+                            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                                <Plus className="h-7 w-7 text-primary" />
+                            </div>
+                            <h3 className="font-bold text-xl text-foreground">Create New Deck</h3>
+                            <p className="text-sm text-muted-foreground mt-2 text-center max-w-[200px]">Start a new collection of flashcards to study</p>
+                        </div>
+                    </Link>
+                )}
 
                 {userDecks.map((deck) => (
                     <Card key={deck.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 flex flex-col overflow-hidden relative border-muted/60">
