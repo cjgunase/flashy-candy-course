@@ -1,8 +1,8 @@
 ---
+trigger: model_decision
 description: Enforce Clerk authentication and strict user data isolation
-globs: 
-alwaysApply: true
 ---
+
 # CLERK AUTHENTICATION & DATA ISOLATION RULES
 
 ## 🚨 CRITICAL MANDATE

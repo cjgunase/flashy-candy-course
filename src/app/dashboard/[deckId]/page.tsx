@@ -14,10 +14,13 @@ import Link from "next/link";
 import { ChevronLeft, Plus } from "lucide-react";
 import { DeckSettings } from "@/components/deck-settings";
 import { CardItem } from "@/components/card-item";
+import { GenerateCardsButton } from "@/components/generate-cards-button";
+import { checkIsPro } from "@/lib/subscription";
 
 export default async function DeckPage({ params }: { params: Promise<{ deckId: string }> }) {
-    const { userId } = await auth();
+    const { userId, orgId, has } = await auth();
     if (!userId) return <div>Sign in to view</div>;
+    const isPro = has({ permission: "ai_flashcard_generation" }) || await checkIsPro(userId, orgId);
 
     const { deckId } = await params;
     const deckIdNum = parseInt(deckId);
@@ -50,11 +53,14 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
                         </div>
                         {deck.description && <p className="text-muted-foreground mt-2">{deck.description}</p>}
                     </div>
-                    <Button asChild>
-                        <Link href={`/dashboard/${deckId}/study`}>
-                            Study Deck ({deckCards.length} cards)
-                        </Link>
-                    </Button>
+                    <div className="flex gap-2">
+                        <GenerateCardsButton deckId={deckIdNum} isPro={isPro} />
+                        <Button asChild>
+                            <Link href={`/dashboard/${deckId}/study`}>
+                                Study Deck ({deckCards.length} cards)
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
             </div>
 

@@ -1,8 +1,8 @@
 ---
+trigger: model_decision
 description: Enforce strict usage of Server Components for data retrieval, Server Actions for mutations, and Zod for validation
-globs: 
-alwaysApply: true
 ---
+
 # SERVER ACTIONS & DATA VALIDATION STRICT RULES
 
 ## 🚨 CRITICAL MANDATE

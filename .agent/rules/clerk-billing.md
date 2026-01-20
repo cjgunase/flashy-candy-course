@@ -1,8 +1,8 @@
 ---
+trigger: model_decision
 description: Enforce usage of Clerk Billing for subscriptions and payments
-globs: 
-alwaysApply: true
 ---
+
 # CLERK BILLING STRICT USAGE RULES
 
 ## 🚨 CRITICAL MANDATE

@@ -1,9 +1,6 @@
 
-import { createDeck } from "@/app/actions";
+import { CreateDeckForm } from "@/components/create-deck-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -21,6 +18,7 @@ export default async function CreateDeckPage() {
     if (!userId) redirect("/");
 
     const isPro = has({ permission: "unlimited_decks" }) || has({ role: "org:admin" }) || await checkIsPro(userId, orgId);
+    const hasAIGeneration = has({ permission: "ai_flashcard_generation" }) || await checkIsPro(userId, orgId);
 
     if (!isPro) {
         const [deckCount] = await db.select({ value: count() }).from(decks).where(eq(decks.userId, userId));
@@ -41,19 +39,7 @@ export default async function CreateDeckPage() {
                     <CardDescription>Give your new flashcard deck a name and description.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={createDeck} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="title">Title</Label>
-                            <Input id="title" name="title" placeholder="e.g., Biology 101" required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea id="description" name="description" placeholder="Optional description..." />
-                        </div>
-                        <div className="flex justify-end">
-                            <Button type="submit">Create Deck</Button>
-                        </div>
-                    </form>
+                    <CreateDeckForm isPro={hasAIGeneration} />
                 </CardContent>
             </Card>
         </div>

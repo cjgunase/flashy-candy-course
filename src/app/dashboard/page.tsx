@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus, BookOpen, ArrowRight, Settings, Crown, Lock } from "lucide-react";
+import { GenerateDeckButton } from "@/components/generate-deck-button";
 
 import { checkIsPro } from "@/lib/subscription";
 
@@ -56,15 +57,18 @@ export default async function DashboardPage() {
                         </Button>
                     </div>
                 ) : (
-                    <Link href="/dashboard/create" className="group h-full">
-                        <div className="h-full border-3 border-dashed border-muted-foreground/20 hover:border-primary/50 hover:bg-accent/10 rounded-xl flex flex-col items-center justify-center p-8 transition-all cursor-pointer min-h-[220px]">
-                            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                                <Plus className="h-7 w-7 text-primary" />
+                    <>
+                        <Link href="/dashboard/create" className="group h-full">
+                            <div className="h-full border-3 border-dashed border-muted-foreground/20 hover:border-primary/50 hover:bg-accent/10 rounded-xl flex flex-col items-center justify-center p-8 transition-all cursor-pointer min-h-[220px]">
+                                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                                    <Plus className="h-7 w-7 text-primary" />
+                                </div>
+                                <h3 className="font-bold text-xl text-foreground">Create New Deck</h3>
+                                <p className="text-sm text-muted-foreground mt-2 text-center max-w-[200px]">Start a new collection of flashcards to study</p>
                             </div>
-                            <h3 className="font-bold text-xl text-foreground">Create New Deck</h3>
-                            <p className="text-sm text-muted-foreground mt-2 text-center max-w-[200px]">Start a new collection of flashcards to study</p>
-                        </div>
-                    </Link>
+                        </Link>
+                        <GenerateDeckButton isPro={isPro} />
+                    </>
                 )}
 
                 {userDecks.map((deck) => (
