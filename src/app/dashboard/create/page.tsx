@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { decks } from "@/db/schema";
 import { eq, count } from "drizzle-orm";
-import { checkIsPro } from "@/lib/subscription";
+
 
 export default async function CreateDeckPage() {
 
@@ -17,8 +17,10 @@ export default async function CreateDeckPage() {
     const { userId, has, orgId } = await auth();
     if (!userId) redirect("/");
 
-    const isPro = has({ permission: "unlimited_decks" }) || has({ role: "org:admin" }) || await checkIsPro(userId, orgId);
-    const hasAIGeneration = has({ permission: "ai_flashcard_generation" }) || await checkIsPro(userId, orgId);
+    // Check if user has pro plan or unlimited_decks feature
+    const isPro = has({ plan: "pro" }) || has({ feature: "unlimited_decks" }) || has({ role: "org:admin" });
+    // Check if user has ai_flashcard_generation feature
+    const hasAIGeneration = has({ plan: "pro" }) || has({ feature: "ai_flashcard_generation" });
 
     if (!isPro) {
         const [deckCount] = await db.select({ value: count() }).from(decks).where(eq(decks.userId, userId));

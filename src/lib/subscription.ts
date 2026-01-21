@@ -1,28 +1,13 @@
-import { clerkClient } from "@clerk/nextjs/server";
-
-export async function checkIsPro(userId: string | null | undefined, orgId?: string | null): Promise<boolean> {
-    if (!userId) return false;
-
-    try {
-        const client = await clerkClient();
-        const user = await client.users.getUser(userId);
-
-        const userPlan = user.publicMetadata?.plan as string | undefined;
-        if (userPlan === "pro") return true;
-
-        if (orgId) {
-            try {
-                const org = await client.organizations.getOrganization({ organizationId: orgId });
-                const orgPlan = org.publicMetadata?.plan as string | undefined;
-                if (orgPlan === "pro") return true;
-            } catch (orgError) {
-                console.error("Error fetching org:", orgError);
-            }
-        }
-
-        return false;
-    } catch (error) {
-        console.error("Error checking pro status:", error);
-        return false;
-    }
-}
+/**
+ * This file previously contained a checkIsPro() function that violated Clerk Billing rules.
+ * 
+ * Per the clerk-billing rule:
+ * - All plan/feature checks MUST use the has() helper from auth()
+ * - Do NOT use publicMetadata to check for plans
+ * - Do NOT create custom subscription logic outside of Clerk Billing
+ * 
+ * Correct usage:
+ * const { has } = await auth();
+ * const isPro = has({ plan: 'pro' });
+ * const hasFeature = has({ feature: 'unlimited_decks' });
+ */

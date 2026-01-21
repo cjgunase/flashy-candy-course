@@ -7,7 +7,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { eq, and, count } from "drizzle-orm";
-import { checkIsPro } from "@/lib/subscription";
+
 import { generateText, Output } from "ai";
 import { openai } from "@ai-sdk/openai";
 
@@ -57,7 +57,8 @@ export async function createDeck(formData: FormData) {
         throw new Error("Invalid fields");
     }
 
-    const isPro = has({ permission: "unlimited_decks" }) || has({ role: "org:admin" }) || await checkIsPro(userId, orgId);
+    // Check if user has pro plan or unlimited_decks feature
+    const isPro = has({ plan: "pro" }) || has({ feature: "unlimited_decks" }) || has({ role: "org:admin" });
 
     if (!isPro) {
         const [deckCount] = await db.select({ value: count() }).from(decks).where(eq(decks.userId, userId));
@@ -245,7 +246,8 @@ export async function generateCards(formData: FormData) {
 
     if (!deckId) throw new Error("Deck ID required");
 
-    const isPro = has({ permission: "ai_flashcard_generation" }) || await checkIsPro(userId, orgId);
+    // Check if user has pro plan or ai_flashcard_generation feature
+    const isPro = has({ plan: "pro" }) || has({ feature: "ai_flashcard_generation" });
 
     if (!isPro) {
         throw new Error("Pro plan required for AI generation");
@@ -287,7 +289,8 @@ export async function generateDeckWithAI(prompt: string) {
     const { userId, has, orgId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    const isPro = has({ permission: "unlimited_decks" }) || has({ role: "org:admin" }) || await checkIsPro(userId, orgId);
+    // Check if user has pro plan or unlimited_decks feature
+    const isPro = has({ plan: "pro" }) || has({ feature: "unlimited_decks" }) || has({ role: "org:admin" });
 
     if (!isPro) {
         throw new Error("Pro plan required for AI generation");
@@ -342,14 +345,16 @@ export async function createDeckWithAI(input: z.infer<typeof createDeckWithAISch
     const { title, description } = validatedFields;
 
     // Check if user has AI generation permission
-    const isPro = has({ permission: "ai_flashcard_generation" }) || await checkIsPro(userId, orgId);
+    // Check if user has pro plan or ai_flashcard_generation feature
+    const isPro = has({ plan: "pro" }) || has({ feature: "ai_flashcard_generation" });
 
     if (!isPro) {
         throw new Error("Pro plan required for AI card generation");
     }
 
     // Check deck limit for non-pro users (this shouldn't happen but double check)
-    const hasUnlimitedDecks = has({ permission: "unlimited_decks" }) || has({ role: "org:admin" }) || await checkIsPro(userId, orgId);
+    // Check if user has pro plan or unlimited_decks feature
+    const hasUnlimitedDecks = has({ plan: "pro" }) || has({ feature: "unlimited_decks" }) || has({ role: "org:admin" });
 
     if (!hasUnlimitedDecks) {
         const [deckCount] = await db.select({ value: count() }).from(decks).where(eq(decks.userId, userId));

@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Plus, BookOpen, ArrowRight, Settings, Crown, Lock } from "lucide-react";
 import { GenerateDeckButton } from "@/components/generate-deck-button";
 
-import { checkIsPro } from "@/lib/subscription";
+
 
 export default async function DashboardPage() {
     const { userId, has, orgId } = await auth();
@@ -18,7 +18,8 @@ export default async function DashboardPage() {
         return <div>Please sign in to view your dashboard.</div>;
     }
 
-    const isPro = has({ permission: "unlimited_decks" }) || has({ role: "org:admin" }) || await checkIsPro(userId, orgId);
+    // Check if user has pro plan or unlimited_decks feature
+    const isPro = has({ plan: "pro" }) || has({ feature: "unlimited_decks" }) || has({ role: "org:admin" });
 
     const userDecks = await db.select().from(decks).where(eq(decks.userId, userId)).orderBy(desc(decks.createdAt));
 

@@ -15,12 +15,13 @@ import { ChevronLeft, Plus } from "lucide-react";
 import { DeckSettings } from "@/components/deck-settings";
 import { CardItem } from "@/components/card-item";
 import { GenerateCardsButton } from "@/components/generate-cards-button";
-import { checkIsPro } from "@/lib/subscription";
+
 
 export default async function DeckPage({ params }: { params: Promise<{ deckId: string }> }) {
     const { userId, orgId, has } = await auth();
     if (!userId) return <div>Sign in to view</div>;
-    const isPro = has({ permission: "ai_flashcard_generation" }) || await checkIsPro(userId, orgId);
+    // Check if user has ai_flashcard_generation feature
+    const isPro = has({ plan: "pro" }) || has({ feature: "ai_flashcard_generation" });
 
     const { deckId } = await params;
     const deckIdNum = parseInt(deckId);

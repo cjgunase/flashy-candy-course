@@ -18,7 +18,7 @@ export default async function StudyPage({ params }: { params: Promise<{ deckId: 
     if (isNaN(deckIdNum)) return notFound();
 
     const deck = await db.query.decks.findFirst({
-        where: eq(decks.id, deckIdNum)
+        where: (decks, { eq, and }) => and(eq(decks.id, deckIdNum), eq(decks.userId, userId))
     });
 
     if (!deck) return notFound();
