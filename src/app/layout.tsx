@@ -4,6 +4,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   ClerkProvider,
   SignInButton,
@@ -50,6 +51,7 @@ export default function RootLayout({
                 </div>
 
                 <div className="flex items-center space-x-2">
+                  <ThemeToggle />
                   <SignedOut>
                     {/* Auth buttons removed from header for minimal design */}
                   </SignedOut>
